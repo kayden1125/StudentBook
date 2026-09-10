@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daybook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FAF9F5;
+    --dot:#E4E1D6;
+    --ink:#1B2430;
+    --ink-soft:#5B6472;
+    --ink-faint:#8A93A0;
+    --blue:#3454D1;
+    --blue-soft:#EAEEFB;
+    --yellow:#F4B400;
+    --yellow-soft:#FEF6E0;
+    --red:#D64550;
+    --red-soft:#FBEBEC;
+    --teal:#1B9C85;
+    --teal-soft:#E7F5F2;
+    --card:#FFFFFF;
+    --border:#E1DDD1;
+    --radius:3px;
+    --shadow:0 1px 2px rgba(27,36,48,.04);
+    color-scheme:light;
+  }
+  [data-theme="dark"]{
+    --paper:#14171C;
+    --dot:#20242C;
+    --ink:#EDEEF1;
+    --ink-soft:#A7AEBB;
+    --ink-faint:#6D7480;
+    --blue:#6C87F5;
+    --blue-soft:#1D2440;
+    --yellow:#F4B400;
+    --yellow-soft:#332A0E;
+    --red:#E5747E;
+    --red-soft:#3A1E22;
+    --teal:#3FCBAE;
+    --teal-soft:#123330;
+    --card:#1B1F26;
+    --border:#2B3038;
+    --shadow:0 1px 3px rgba(0,0,0,.35);
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(var(--dot) 1px, transparent 1px) 0 0/22px 22px,
+      var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    transition:background-color .2s ease, color .2s ease;
+  }
+  h1,h2,h3,.serif{
+    font-family:'Fraunces',serif;
+    font-weight:500;
+    margin:0;
+  }
+  button{font-family:inherit;}
+  .app{
+    display:flex;
+    min-height:100vh;
+  }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    width:216px;
+    flex-shrink:0;
+    background:var(--card);
+    border-right:1px solid var(--border);
+    display:flex;
+    flex-direction:column;
+    padding:22px 14px;
+  }
+  .brand{
+    font-family:'Fraunces',serif;
+    font-style:italic;
+    font-size:24px;
+    font-weight:500;
+    padding:0 8px 22px 8px;
+    border-bottom:1px solid var(--border);
+    margin-bottom:14px;
+  }
+  .brand span{color:var(--blue);font-style:normal;}
+  nav{display:flex;flex-direction:column;gap:2px;}
+  .nav-btn{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:9px 10px;
+    border:none;
+    background:transparent;
+    color:var(--ink-soft);
+    border-radius:var(--radius);
+    cursor:pointer;
+    font-size:14.5px;
+    text-align:left;
+  }
+  .nav-btn:hover{background:var(--blue-soft);color:var(--ink);}
+  .nav-btn.active{background:var(--ink);color:var(--paper);}
+  .nav-btn svg{flex-shrink:0;}
+  .sidebar-footer{
+    margin-top:auto;
+    padding-top:14px;
+    border-top:1px solid var(--border);
+  }
+  .ghost-btn{
+    width:100%;
+    background:none;
+    border:1px solid var(--border);
+    color:var(--ink-faint);
+    padding:7px 10px;
+    border-radius:var(--radius);
+    cursor:pointer;
+    font-size:12.5px;
+  }
+  .ghost-btn:hover{border-color:var(--red);color:var(--red);}
+
+  /* ---------- Main ---------- */
+  main{
+    flex:1;
+    padding:30px 40px 60px;
+    max-width:920px;
+  }
+  .view{display:none;}
+  .view.active{display:block;}
+  .page-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:26px;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .page-head h1{font-size:32px;}
+  .page-head .date-line{color:var(--ink-soft);font-size:14px;margin-top:4px;}
+
+  .section-label{
+    font-size:13px;
+    color:var(--ink-faint);
+    margin:26px 0 10px;
+    padding-bottom:6px;
+    border-bottom:1px solid var(--border);
+  }
+  .section-label:first-child{margin-top:0;}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+  }
+  .theme-toggle{
+    width:100%;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:none;
+    border:1px solid var(--border);
+    color:var(--ink-soft);
+    padding:7px 10px;
+    border-radius:var(--radius);
+    cursor:pointer;
+    font-size:12.5px;
+    margin-bottom:8px;
+  }
+  .theme-toggle:hover{border-color:var(--blue);color:var(--ink);}
+  .theme-toggle svg{flex-shrink:0;}
+  .sync-status{
+    font-size:11px;
+    color:var(--ink-faint);
+    padding:0 10px 8px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .sync-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);flex-shrink:0;}
+  .sync-dot.off{background:var(--ink-faint);}
+  .empty{
+    padding:22px 16px;
+    color:var(--ink-faint);
+    font-size:14px;
+    border:1px dashed var(--border);
+    border-radius:var(--radius);
+  }
+
+  /* ---------- Today: class rows ---------- */
+  .class-row{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:12px 14px;
+    border-bottom:1px solid var(--border);
+  }
+  .class-row:last-child{border-bottom:none;}
+  .swatch{width:5px;align-self:stretch;border-radius:3px;flex-shrink:0;}
+  .class-time{font-family:'Fraunces',serif;font-size:15px;width:98px;flex-shrink:0;color:var(--ink);}
+  .class-title{font-weight:600;font-size:14.5px;}
+  .class-loc{color:var(--ink-soft);font-size:13px;margin-top:2px;}
+
+  /* ---------- Tasks ---------- */
+  .task-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:11px 14px;
+    border-bottom:1px solid var(--border);
+  }
+  .task-row:last-child{border-bottom:none;}
+  .checkbox{
+    width:18px;height:18px;
+    border:1.5px solid var(--ink-faint);
+    border-radius:50%;
+    flex-shrink:0;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    background:none;
+    padding:0;
+  }
+  .checkbox.done{background:var(--teal);border-color:var(--teal);}
+  .checkbox svg{display:none;width:11px;height:11px;stroke:white;}
+  .checkbox.done svg{display:block;}
+  .task-main{flex:1;min-width:0;}
+  .task-title{font-size:14.5px;}
+  .task-title.done{color:var(--ink-faint);text-decoration:line-through;}
+  .task-meta{display:flex;gap:8px;align-items:center;margin-top:3px;flex-wrap:wrap;}
+  .tag{
+    font-size:11.5px;
+    padding:1px 7px;
+    border-radius:9px;
+    color:white;
+  }
+  .due-badge{font-size:12px;color:var(--ink-soft);}
+  .due-badge.overdue{color:var(--red);font-weight:600;}
+  .due-badge.today{color:var(--blue);font-weight:600;}
+  .icon-btn{
+    background:none;border:none;color:var(--ink-faint);cursor:pointer;
+    padding:4px;border-radius:var(--radius);display:flex;
+  }
+  .icon-btn:hover{color:var(--red);background:var(--red-soft);}
+
+  .filter-row{display:flex;gap:6px;margin-bottom:14px;}
+  .filter-chip{
+    border:1px solid var(--border);
+    background:var(--card);
+    padding:6px 12px;
+    border-radius:14px;
+    font-size:13px;
+    cursor:pointer;
+    color:var(--ink-soft);
+  }
+  .filter-chip.active{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+
+  /* ---------- Forms ---------- */
+  .add-form{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    padding:14px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    margin-bottom:16px;
+  }
+  .field{display:flex;flex-direction:column;gap:4px;}
+  .field label{font-size:11.5px;color:var(--ink-faint);}
+  input,select,textarea{
+    font-family:inherit;
+    font-size:13.5px;
+    padding:7px 9px;
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    background:var(--paper);
+    color:var(--ink);
+  }
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--blue);outline-offset:0;}
+  .primary-btn{
+    background:var(--blue);
+    color:white;
+    border:none;
+    padding:8px 16px;
+    border-radius:var(--radius);
+    cursor:pointer;
+    font-size:13.5px;
+    font-weight:600;
+    align-self:flex-end;
+  }
+  .primary-btn:hover{background:#2941a8;}
+
+  /* ---------- Schedule grid ---------- */
+  .schedule-wrap{overflow-x:auto;}
+  .schedule-grid{
+    display:grid;
+    grid-template-columns:52px repeat(7,minmax(120px,1fr));
+    min-width:900px;
+  }
+  .day-head{
+    padding:8px 6px;
+    font-size:13px;
+    font-weight:600;
+    text-align:center;
+    border-bottom:1px solid var(--border);
+    position:sticky;top:0;background:var(--paper);
+  }
+  .hour-col{position:relative;}
+  .hour-label{
+    height:60px;
+    font-size:11px;
+    color:var(--ink-faint);
+    text-align:right;
+    padding-right:6px;
+    transform:translateY(-6px);
+  }
+  .day-col{
+    position:relative;
+    border-left:1px solid var(--border);
+    background-image:repeating-linear-gradient(to bottom, var(--border) 0, var(--border) 1px, transparent 1px, transparent 60px);
+    height:900px;
+  }
+  .class-block{
+    position:absolute;
+    left:3px;right:3px;
+    border-radius:var(--radius);
+    padding:5px 7px;
+    color:white;
+    font-size:11.5px;
+    overflow:hidden;
+    line-height:1.35;
+    cursor:pointer;
+  }
+  .class-block b{display:block;font-size:12.5px;}
+
+  /* ---------- Focus timer ---------- */
+  .timer-wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:50px 20px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+  }
+  .timer-mode{font-size:13px;color:var(--ink-faint);margin-bottom:10px;}
+  .timer-display{
+    font-family:'Fraunces',serif;
+    font-size:88px;
+    font-weight:500;
+    line-height:1;
+    letter-spacing:-2px;
+  }
+  .timer-controls{display:flex;gap:10px;margin-top:26px;}
+  .timer-btn{
+    border:1px solid var(--border);
+    background:var(--card);
+    padding:9px 20px;
+    border-radius:var(--radius);
+    cursor:pointer;
+    font-size:14px;
+  }
+  .timer-btn.primary{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+  .timer-sub{margin-top:22px;color:var(--ink-soft);font-size:13px;}
+  .session-dots{display:flex;gap:6px;margin-top:8px;}
+  .session-dot{width:8px;height:8px;border-radius:50%;background:var(--border);}
+  .session-dot.filled{background:var(--teal);}
+
+  /* ---------- Notes ---------- */
+  .notes-layout{display:flex;gap:18px;}
+  .notes-list{width:260px;flex-shrink:0;display:flex;flex-direction:column;gap:8px;}
+  .note-item{
+    padding:10px 12px;
+    border:1px solid var(--border);
+    border-left:3px solid var(--blue);
+    border-radius:var(--radius);
+    cursor:pointer;
+    background:var(--card);
+  }
+  .note-item.active{background:var(--blue-soft);}
+  .note-item-title{font-size:13.5px;font-weight:600;}
+  .note-item-meta{font-size:11.5px;color:var(--ink-faint);margin-top:2px;}
+  .note-editor{flex:1;display:flex;flex-direction:column;gap:10px;}
+  .note-editor input[type=text]{font-size:18px;font-family:'Fraunces',serif;padding:8px 0;border:none;border-bottom:1px solid var(--border);border-radius:0;background:transparent;}
+  .note-editor textarea{min-height:280px;resize:vertical;line-height:1.55;border:none;background:transparent;padding:4px 0;}
+  .note-editor textarea:focus,.note-editor input[type=text]:focus{outline:none;}
+
+  .loading-screen{
+    display:flex;align-items:center;justify-content:center;height:100vh;
+    color:var(--ink-faint);font-size:14px;
+  }
+
+  @media (max-width:760px){
+    .app{flex-direction:column;}
+    .sidebar{width:100%;flex-direction:row;align-items:center;padding:12px 14px;overflow-x:auto;}
+    .brand{border-bottom:none;padding:0 14px 0 0;margin:0;border-right:1px solid var(--border);margin-right:8px;padding-right:14px;}
+    nav{flex-direction:row;}
+    .sidebar-footer{margin-top:0;padding-top:0;border-top:none;margin-left:8px;}
+    .nav-btn span{display:none;}
+    main{padding:20px 16px 50px;}
+    .timer-display{font-size:60px;}
+  }
+</style>
+</head>
+<body>
+
+<div id="loading" class="loading-screen">Opening your Daybook…</div>
+
+<div class="app" id="app" style="display:none;">
+  <aside class="sidebar">
+    <div class="brand"><span>Day</span>book</div>
+    <nav>
+      <button class="nav-btn active" data-view="today">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        <span>Today</span>
+      </button>
+      <button class="nav-btn" data-view="tasks">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h16M4 12h16M4 18h10"/><circle cx="20" cy="18" r="1.4" fill="currentColor" stroke="none"/></svg>
+        <span>Tasks</span>
+      </button>
+      <button class="nav-btn" data-view="schedule">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3.5" y="4.5" width="17" height="16" rx="1.5"/><path d="M3.5 9.5h17M8 3v3M16 3v3"/></svg>
+        <span>Schedule</span>
+      </button>
+      <button class="nav-btn" data-view="focus">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>
+        <span>Focus</span>
+      </button>
+      <button class="nav-btn" data-view="notes">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3h9l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M9 12h7M9 16h7M9 8h3"/></svg>
+        <span>Notes</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="theme-toggle" id="themeToggle">
+        <svg id="themeIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
+        <span id="themeLabel">Dark mode</span>
+      </button>
+      <div class="sync-status"><span class="sync-dot" id="syncDot"></span><span id="syncLabel">Synced to your account</span></div>
+      <button class="ghost-btn" id="resetBtn">Clear all data</button>
+    </div>
+  </aside>
+
+  <main>
+
+    <!-- TODAY -->
+    <section class="view active" id="view-today">
+      <div class="page-head">
+        <div>
+          <h1 id="todayDate" class="serif"></h1>
+          <div class="date-line" id="todaySummary"></div>
+        </div>
+      </div>
+
+      <div class="section-label">Classes today</div>
+      <div class="card" id="todayClasses"></div>
+
+      <div class="section-label">Due today &amp; overdue</div>
+      <div class="add-form" id="quickAddForm">
+        <div class="field" style="flex:1;min-width:160px;">
+          <label for="quickTitle">Quick add a task</label>
+          <input type="text" id="quickTitle" placeholder="e.g. Read chapter 4">
+        </div>
+        <button class="primary-btn" id="quickAddBtn">Add</button>
+      </div>
+      <div class="card" id="todayTasks"></div>
+    </section>
+
+    <!-- TASKS -->
+    <section class="view" id="view-tasks">
+      <div class="page-head">
+        <h1 class="serif">Tasks</h1>
+      </div>
+
+      <div class="add-form" id="taskForm">
+        <div class="field">
+          <label for="taskTitle">Task</label>
+          <input type="text" id="taskTitle" placeholder="Assignment or to-do" style="width:190px;">
+        </div>
+        <div class="field">
+          <label for="taskCourse">Course</label>
+          <select id="taskCourse"></select>
+        </div>
+        <div class="field">
+          <label for="taskDue">Due date</label>
+          <input type="date" id="taskDue">
+        </div>
+        <div class="field">
+          <label for="taskPriority">Priority</label>
+          <select id="taskPriority">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+        <button class="primary-btn" id="taskAddBtn">Add task</button>
+      </div>
+
+      <div class="filter-row" id="taskFilters">
+        <button class="filter-chip active" data-filter="open">Open</button>
+        <button class="filter-chip" data-filter="all">All</button>
+        <button class="filter-chip" data-filter="done">Completed</button>
+      </div>
+
+      <div class="card" id="taskList"></div>
+    </section>
+
+    <!-- SCHEDULE -->
+    <section class="view" id="view-schedule">
+      <div class="page-head">
+        <h1 class="serif">Schedule</h1>
+      </div>
+
+      <div class="add-form" id="classForm">
+        <div class="field">
+          <label for="classTitle">Course</label>
+          <input type="text" id="classTitle" placeholder="e.g. Calculus II" style="width:170px;">
+        </div>
+        <div class="field">
+          <label for="classDay">Day</label>
+          <select id="classDay">
+            <option value="0">Monday</option>
+            <option value="1">Tuesday</option>
+            <option value="2">Wednesday</option>
+            <option value="3">Thursday</option>
+            <option value="4">Friday</option>
+            <option value="5">Saturday</option>
+            <option value="6">Sunday</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="classStart">Start</label>
+          <input type="time" id="classStart" value="09:00">
+        </div>
+        <div class="field">
+          <label for="classEnd">End</label>
+          <input type="time" id="classEnd" value="10:00">
+        </div>
+        <div class="field">
+          <label for="classLoc">Location</label>
+          <input type="text" id="classLoc" placeholder="Room / building" style="width:130px;">
+        </div>
+        <div class="field">
+          <label for="classColor">Color</label>
+          <select id="classColor">
+            <option value="#3454D1">Blue</option>
+            <option value="#1B9C85">Teal</option>
+            <option value="#D64550">Red</option>
+            <option value="#F4B400">Amber</option>
+            <option value="#8E5CE0">Violet</option>
+            <option value="#2E86AB">Cyan</option>
+          </select>
+        </div>
+        <button class="primary-btn" id="classAddBtn">Add class</button>
+      </div>
+
+      <div class="schedule-wrap">
+        <div class="schedule-grid" id="scheduleGrid"></div>
+      </div>
+    </section>
+
+    <!-- FOCUS -->
+    <section class="view" id="view-focus">
+      <div class="page-head">
+        <h1 class="serif">Focus timer</h1>
+      </div>
+      <div class="timer-wrap">
+        <div class="timer-mode" id="timerMode">Work session</div>
+        <div class="timer-display" id="timerDisplay">25:00</div>
+        <div class="timer-controls">
+          <button class="timer-btn primary" id="timerStart">Start</button>
+          <button class="timer-btn" id="timerReset">Reset</button>
+        </div>
+        <div class="timer-sub">Sessions completed today</div>
+        <div class="session-dots" id="sessionDots"></div>
+      </div>
+    </section>
+
+    <!-- NOTES -->
+    <section class="view" id="view-notes">
+      <div class="page-head">
+        <h1 class="serif">Notes</h1>
+        <button class="primary-btn" id="newNoteBtn">New note</button>
+      </div>
+      <div class="notes-layout">
+        <div class="notes-list" id="notesList"></div>
+        <div class="note-editor" id="noteEditor" style="display:none;">
+          <input type="text" id="noteTitleInput" placeholder="Untitled note">
+          <textarea id="noteBodyInput" placeholder="Write here…"></textarea>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var DAY_NAMES = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  var DAY_FULL = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+  var GRID_START = 7 * 60;   // 7:00 in minutes
+  var GRID_END = 22 * 60;    // 22:00
+  var GRID_RANGE = GRID_END - GRID_START;
+  var GRID_HEIGHT = 900;     // px, matches .day-col height
+
+  var state = {
+    tasks: [],
+    schedule: [],
+    notes: [],
+    pomodoro: { sessions: 0 },
+    theme: "light"
+  };
+
+  var activeNoteId = null;
+  var taskFilter = "open";
+
+  var timer = {
+    mode: "work",
+    remaining: 25 * 60,
+    running: false,
+    handle: null
+  };
+
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+  // ---------------- Storage ----------------
+  function loadAll(){
+    var keys = ["tasks","schedule","notes","pomodoro","theme"];
+    return Promise.all(keys.map(function(k){
+      return window.storage.get("daybook:"+k).catch(function(){ return null; });
+    })).then(function(results){
+      results.forEach(function(res, i){
+        var key = keys[i];
+        if(res && res.value){
+          try{ state[key] = JSON.parse(res.value); }catch(e){}
+        }
+      });
+      if(!Array.isArray(state.tasks)) state.tasks = [];
+      if(!Array.isArray(state.schedule)) state.schedule = [];
+      if(!Array.isArray(state.notes)) state.notes = [];
+      if(!state.pomodoro || typeof state.pomodoro.sessions !== "number") state.pomodoro = {sessions:0};
+      applyTheme(state.theme === "dark" ? "dark" : "light");
+      setSyncStatus(true);
+    }).catch(function(){
+      setSyncStatus(false);
+    });
+  }
+
+  function save(key){
+    try{
+      window.storage.set("daybook:"+key, JSON.stringify(state[key])).then(function(){
+        setSyncStatus(true);
+      }).catch(function(err){
+        console.error("Storage save failed for", key, err);
+        setSyncStatus(false);
+      });
+    }catch(e){ console.error(e); setSyncStatus(false); }
+  }
+
+  function setSyncStatus(ok){
+    var dot = document.getElementById("syncDot");
+    var label = document.getElementById("syncLabel");
+    if(!dot || !label) return;
+    dot.classList.toggle("off", !ok);
+    label.textContent = ok ? "Synced to your account" : "Saved on this device only";
+  }
+
+  function applyTheme(mode){
+    document.documentElement.setAttribute("data-theme", mode === "dark" ? "dark" : "light");
+    var label = document.getElementById("themeLabel");
+    if(label) label.textContent = mode === "dark" ? "Light mode" : "Dark mode";
+    state.theme = mode;
+  }
+
+  // ---------------- Helpers ----------------
+  function todayISO(){
+    var d = new Date();
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  }
+  function todayWeekdayIndex(){
+    var js = new Date().getDay(); // 0=Sun..6=Sat
+    return js === 0 ? 6 : js - 1; // convert to 0=Mon..6=Sun
+  }
+  function fmtTime(mins){
+    var h = Math.floor(mins/60), m = mins%60;
+    var ampm = h >= 12 ? "PM" : "AM";
+    var h12 = h % 12; if(h12 === 0) h12 = 12;
+    return h12 + (m ? ":"+String(m).padStart(2,"0") : ":00") + " " + ampm;
+  }
+  function timeStrToMinutes(str){
+    var parts = str.split(":");
+    return parseInt(parts[0],10)*60 + parseInt(parts[1],10);
+  }
+  function dueStatus(dueISO){
+    if(!dueISO) return "none";
+    var today = todayISO();
+    if(dueISO < today) return "overdue";
+    if(dueISO === today) return "today";
+    return "upcoming";
+  }
+  function fmtDue(dueISO){
+    if(!dueISO) return "No date";
+    var status = dueStatus(dueISO);
+    if(status === "today") return "Today";
+    var d = new Date(dueISO+"T00:00:00");
+    var opts = {month:"short", day:"numeric"};
+    return d.toLocaleDateString(undefined, opts) + (status === "overdue" ? " (overdue)" : "");
+  }
+  function courseList(){
+    var set = {};
+    state.schedule.forEach(function(c){ set[c.title] = c.color; });
+    state.tasks.forEach(function(t){ if(t.course && !set[t.course]) set[t.course] = "#5B6472"; });
+    return set;
+  }
+  function courseColor(name){
+    var found = state.schedule.find(function(c){ return c.title === name; });
+    return found ? found.color : "#5B6472";
+  }
+  function checkIcon(){
+    return '<svg viewBox="0 0 24 24" fill="none"><path d="M4 12l5 5L20 6" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+  function trashIcon(){
+    return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>';
+  }
+
+  // ---------------- Rendering: Today ----------------
+  function renderToday(){
+    var now = new Date();
+    document.getElementById("todayDate").textContent =
+      now.toLocaleDateString(undefined,{weekday:"long"}) + ", " +
+      now.toLocaleDateString(undefined,{month:"long", day:"numeric"});
+
+    var wd = todayWeekdayIndex();
+    var todaysClasses = state.schedule.filter(function(c){ return c.day === wd; })
+      .sort(function(a,b){ return a.start - b.start; });
+    var dueList = state.tasks.filter(function(t){
+      return !t.done && (dueStatus(t.due) === "today" || dueStatus(t.due) === "overdue");
+    });
+
+    document.getElementById("todaySummary").textContent =
+      todaysClasses.length + (todaysClasses.length===1 ? " class" : " classes") + " · " +
+      dueList.length + " task" + (dueList.length===1?"":"s") + " due";
+
+    var classesEl = document.getElementById("todayClasses");
+    if(todaysClasses.length === 0){
+      classesEl.innerHTML = '<div class="empty">No classes on the schedule for today.</div>';
+    }else{
+      classesEl.innerHTML = todaysClasses.map(function(c){
+        return '<div class="class-row">'+
+          '<div class="swatch" style="background:'+c.color+'"></div>'+
+          '<div class="class-time">'+fmtTime(c.start)+'</div>'+
+          '<div><div class="class-title">'+escapeHtml(c.title)+'</div>'+
+          (c.location ? '<div class="class-loc">'+escapeHtml(c.location)+'</div>' : '')+
+          '</div></div>';
+      }).join("");
+    }
+
+    var tasksEl = document.getElementById("todayTasks");
+    if(dueList.length === 0){
+      tasksEl.innerHTML = '<div class="empty">Nothing due today. Enjoy the clear runway.</div>';
+    }else{
+      tasksEl.innerHTML = dueList.sort(function(a,b){ return (a.due||"") < (b.due||"") ? -1 : 1; })
+        .map(taskRowHtml).join("");
+    }
+    bindTaskRowEvents(document.getElementById("todayTasks"));
+  }
+
+  // ---------------- Rendering: Tasks ----------------
+  function taskRowHtml(t){
+    var status = dueStatus(t.due);
+    var badgeClass = status === "overdue" ? "overdue" : (status === "today" ? "today" : "");
+    var color = t.course ? courseColor(t.course) : "#8A93A0";
+    return '<div class="task-row" data-id="'+t.id+'">'+
+      '<button class="checkbox '+(t.done?"done":"")+'" data-action="toggle">'+checkIcon()+'</button>'+
+      '<div class="task-main">'+
+        '<div class="task-title '+(t.done?"done":"")+'">'+escapeHtml(t.title)+'</div>'+
+        '<div class="task-meta">'+
+          (t.course ? '<span class="tag" style="background:'+color+'">'+escapeHtml(t.course)+'</span>' : '')+
+          '<span class="due-badge '+badgeClass+'">'+fmtDue(t.due)+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<button class="icon-btn" data-action="delete">'+trashIcon()+'</button>'+
+    '</div>';
+  }
+
+  function renderTasks(){
+    populateCourseSelect();
+    var list = state.tasks.slice();
+    if(taskFilter === "open") list = list.filter(function(t){ return !t.done; });
+    if(taskFilter === "done") list = list.filter(function(t){ return t.done; });
+    list.sort(function(a,b){
+      if(a.done !== b.done) return a.done ? 1 : -1;
+      return (a.due||"9999") < (b.due||"9999") ? -1 : 1;
+    });
+    var el = document.getElementById("taskList");
+    if(list.length === 0){
+      el.innerHTML = '<div class="empty">No tasks here yet.</div>';
+    }else{
+      el.innerHTML = list.map(taskRowHtml).join("");
+    }
+    bindTaskRowEvents(el);
+  }
+
+  function bindTaskRowEvents(container){
+    container.querySelectorAll(".task-row").forEach(function(row){
+      var id = row.getAttribute("data-id");
+      row.querySelector('[data-action="toggle"]').addEventListener("click", function(){
+        var t = state.tasks.find(function(x){ return x.id === id; });
+        if(t){ t.done = !t.done; save("tasks"); renderAll(); }
+      });
+      row.querySelector('[data-action="delete"]').addEventListener("click", function(){
+        state.tasks = state.tasks.filter(function(x){ return x.id !== id; });
+        save("tasks"); renderAll();
+      });
+    });
+  }
+
+  function populateCourseSelect(){
+    var sel = document.getElementById("taskCourse");
+    var current = sel.value;
+    var courses = Object.keys(courseList());
+    sel.innerHTML = '<option value="">No course</option>' +
+      courses.map(function(c){ return '<option value="'+escapeAttr(c)+'">'+escapeHtml(c)+'</option>'; }).join("");
+    if(courses.indexOf(current) !== -1) sel.value = current;
+  }
+
+  // ---------------- Rendering: Schedule ----------------
+  function renderSchedule(){
+    var grid = document.getElementById("scheduleGrid");
+    var html = '<div class="day-head"></div>';
+    DAY_NAMES.forEach(function(d){ html += '<div class="day-head">'+d+'</div>'; });
+
+    // hour label column
+    html += '<div class="hour-col">';
+    for(var h = GRID_START; h <= GRID_END; h += 60){
+      html += '<div class="hour-label">'+fmtTime(h).replace(":00","")+'</div>';
+    }
+    html += '</div>';
+
+    for(var d = 0; d < 7; d++){
+      html += '<div class="day-col" data-day="'+d+'">';
+      state.schedule.filter(function(c){ return c.day === d; }).forEach(function(c){
+        var top = Math.max(0,(c.start - GRID_START) / GRID_RANGE * GRID_HEIGHT);
+        var height = Math.max(24,(c.end - c.start) / GRID_RANGE * GRID_HEIGHT);
+        html += '<div class="class-block" data-id="'+c.id+'" style="top:'+top+'px;height:'+height+'px;background:'+c.color+'">'+
+          '<b>'+escapeHtml(c.title)+'</b>'+fmtTime(c.start)+'–'+fmtTime(c.end)+
+          (c.location ? '<br>'+escapeHtml(c.location) : '')+
+        '</div>';
+      });
+      html += '</div>';
+    }
+    grid.innerHTML = html;
+
+    grid.querySelectorAll(".class-block").forEach(function(block){
+      block.addEventListener("click", function(){
+        var id = block.getAttribute("data-id");
+        if(confirm("Remove this class from your schedule?")){
+          state.schedule = state.schedule.filter(function(c){ return c.id !== id; });
+          save("schedule"); renderAll();
+        }
+      });
+    });
+  }
+
+  // ---------------- Rendering: Notes ----------------
+  function renderNotes(){
+    var listEl = document.getElementById("notesList");
+    if(state.notes.length === 0){
+      listEl.innerHTML = '<div class="empty">No notes yet. Start one from a lecture or reading.</div>';
+    }else{
+      var sorted = state.notes.slice().sort(function(a,b){ return b.updated.localeCompare(a.updated); });
+      listEl.innerHTML = sorted.map(function(n){
+        return '<div class="note-item '+(n.id===activeNoteId?"active":"")+'" data-id="'+n.id+'">'+
+          '<div class="note-item-title">'+(escapeHtml(n.title)||"Untitled note")+'</div>'+
+          '<div class="note-item-meta">'+new Date(n.updated).toLocaleDateString(undefined,{month:"short",day:"numeric"})+'</div>'+
+        '</div>';
+      }).join("");
+      listEl.querySelectorAll(".note-item").forEach(function(item){
+        item.addEventListener("click", function(){
+          activeNoteId = item.getAttribute("data-id");
+          renderNotes();
+        });
+      });
+    }
+
+    var editor = document.getElementById("noteEditor");
+    var note = state.notes.find(function(n){ return n.id === activeNoteId; });
+    if(note){
+      editor.style.display = "flex";
+      document.getElementById("noteTitleInput").value = note.title;
+      document.getElementById("noteBodyInput").value = note.body;
+    }else{
+      editor.style.display = "none";
+    }
+  }
+
+  function currentNote(){ return state.notes.find(function(n){ return n.id === activeNoteId; }); }
+
+  // ---------------- Rendering: Timer ----------------
+  function renderTimer(){
+    var m = Math.floor(timer.remaining/60), s = timer.remaining%60;
+    document.getElementById("timerDisplay").textContent = String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+    document.getElementById("timerMode").textContent = timer.mode === "work" ? "Work session" : "Short break";
+    document.getElementById("timerStart").textContent = timer.running ? "Pause" : "Start";
+    var dotsEl = document.getElementById("sessionDots");
+    var dots = "";
+    var total = Math.max(4, state.pomodoro.sessions);
+    for(var i=0;i<Math.max(4,total);i++){
+      dots += '<div class="session-dot '+(i < state.pomodoro.sessions ? "filled":"")+'"></div>';
+    }
+    dotsEl.innerHTML = dots;
+  }
+
+  function tickTimer(){
+    timer.remaining--;
+    if(timer.remaining <= 0){
+      if(timer.mode === "work"){
+        state.pomodoro.sessions++;
+        save("pomodoro");
+        timer.mode = "break";
+        timer.remaining = 5*60;
+      }else{
+        timer.mode = "work";
+        timer.remaining = 25*60;
+      }
+    }
+    renderTimer();
+  }
+
+  // ---------------- Escaping ----------------
+  function escapeHtml(str){
+    if(str === undefined || str === null) return "";
+    return String(str).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function escapeAttr(str){ return escapeHtml(str); }
+
+  function renderAll(){
+    renderToday();
+    renderTasks();
+    renderSchedule();
+    renderNotes();
+    renderTimer();
+  }
+
+  // ---------------- Navigation ----------------
+  function switchView(view){
+    document.querySelectorAll(".nav-btn").forEach(function(b){
+      b.classList.toggle("active", b.getAttribute("data-view") === view);
+    });
+    document.querySelectorAll(".view").forEach(function(v){
+      v.classList.toggle("active", v.id === "view-"+view);
+    });
+  }
+
+  // ---------------- Event wiring ----------------
+  function wireEvents(){
+    document.querySelectorAll(".nav-btn").forEach(function(b){
+      b.addEventListener("click", function(){ switchView(b.getAttribute("data-view")); });
+    });
+
+    document.getElementById("quickAddBtn").addEventListener("click", function(){
+      var input = document.getElementById("quickTitle");
+      if(!input.value.trim()) return;
+      state.tasks.push({id:uid(), title:input.value.trim(), course:"", due:todayISO(), priority:"medium", done:false});
+      input.value = "";
+      save("tasks"); renderAll();
+    });
+    document.getElementById("quickTitle").addEventListener("keydown", function(e){
+      if(e.key === "Enter") document.getElementById("quickAddBtn").click();
+    });
+
+    document.getElementById("taskAddBtn").addEventListener("click", function(){
+      var title = document.getElementById("taskTitle").value.trim();
+      if(!title) return;
+      state.tasks.push({
+        id:uid(),
+        title:title,
+        course:document.getElementById("taskCourse").value,
+        due:document.getElementById("taskDue").value,
+        priority:document.getElementById("taskPriority").value,
+        done:false
+      });
+      document.getElementById("taskTitle").value = "";
+      document.getElementById("taskDue").value = "";
+      save("tasks"); renderAll();
+    });
+
+    document.querySelectorAll(".filter-chip").forEach(function(chip){
+      chip.addEventListener("click", function(){
+        taskFilter = chip.getAttribute("data-filter");
+        document.querySelectorAll(".filter-chip").forEach(function(c){ c.classList.toggle("active", c===chip); });
+        renderTasks();
+      });
+    });
+
+    document.getElementById("classAddBtn").addEventListener("click", function(){
+      var title = document.getElementById("classTitle").value.trim();
+      var start = timeStrToMinutes(document.getElementById("classStart").value || "09:00");
+      var end = timeStrToMinutes(document.getElementById("classEnd").value || "10:00");
+      if(!title || end <= start) return;
+      state.schedule.push({
+        id:uid(),
+        title:title,
+        day:parseInt(document.getElementById("classDay").value,10),
+        start:start,
+        end:end,
+        location:document.getElementById("classLoc").value.trim(),
+        color:document.getElementById("classColor").value
+      });
+      document.getElementById("classTitle").value = "";
+      document.getElementById("classLoc").value = "";
+      save("schedule"); renderAll();
+    });
+
+    document.getElementById("newNoteBtn").addEventListener("click", function(){
+      var n = {id:uid(), title:"", body:"", updated:new Date().toISOString()};
+      state.notes.push(n);
+      activeNoteId = n.id;
+      save("notes"); renderNotes();
+      document.getElementById("noteTitleInput").focus();
+    });
+
+    var titleInput = document.getElementById("noteTitleInput");
+    var bodyInput = document.getElementById("noteBodyInput");
+    function persistNote(){
+      var n = currentNote();
+      if(!n) return;
+      n.title = titleInput.value;
+      n.body = bodyInput.value;
+      n.updated = new Date().toISOString();
+      save("notes");
+    }
+    titleInput.addEventListener("input", function(){ persistNote(); refreshNoteListLabelOnly(); });
+    bodyInput.addEventListener("input", persistNote);
+
+    function refreshNoteListLabelOnly(){
+      var item = document.querySelector('.note-item[data-id="'+activeNoteId+'"] .note-item-title');
+      if(item) item.textContent = titleInput.value || "Untitled note";
+    }
+
+    document.getElementById("timerStart").addEventListener("click", function(){
+      timer.running = !timer.running;
+      if(timer.running){
+        timer.handle = setInterval(tickTimer, 1000);
+      }else{
+        clearInterval(timer.handle);
+      }
+      renderTimer();
+    });
+    document.getElementById("timerReset").addEventListener("click", function(){
+      timer.running = false;
+      clearInterval(timer.handle);
+      timer.mode = "work";
+      timer.remaining = 25*60;
+      renderTimer();
+    });
+
+    document.getElementById("themeToggle").addEventListener("click", function(){
+      applyTheme(state.theme === "dark" ? "light" : "dark");
+      save("theme");
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", function(){
+      if(!confirm("Clear all tasks, classes and notes? This cannot be undone.")) return;
+      state.tasks = []; state.schedule = []; state.notes = []; state.pomodoro = {sessions:0};
+      activeNoteId = null;
+      save("tasks"); save("schedule"); save("notes"); save("pomodoro");
+      renderAll();
+    });
+  }
+
+  // ---------------- Init ----------------
+  loadAll().then(function(){
+    wireEvents();
+    renderAll();
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("app").style.display = "flex";
+  }).catch(function(err){
+    console.error("Failed to load Daybook data", err);
+    wireEvents();
+    renderAll();
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("app").style.display = "flex";
+  });
+
+})();
+</script>
+</body>
+</html>
